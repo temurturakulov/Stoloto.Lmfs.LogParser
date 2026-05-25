@@ -22,10 +22,6 @@ function esc(s) {
 }
 
 async function init() {
-  const today = new Date().toISOString().slice(0, 10);
-  $('date-from').value = today;
-  $('date-to').value   = today;
-
   appSettings = await getSettings();
   if (appSettings.lastLogPath) {
     state.path   = appSettings.lastLogPath;
@@ -36,7 +32,6 @@ async function init() {
     $('no-path').style.display = '';
   }
 
-  $('load-btn').addEventListener('click', load);
   $('modal-prev-btn').addEventListener('click', () => { modalState.page--; loadModalPage(); });
   $('modal-next-btn').addEventListener('click', () => { modalState.page++; loadModalPage(); });
   $('modal-page-size').addEventListener('change', () => { modalState.page = 1; loadModalPage(); });
@@ -50,10 +45,7 @@ async function load() {
 
   let stats;
   try {
-    stats = await getStats({
-      path: state.path, isFile: state.isFile,
-      dateFrom: $('date-from').value, dateTo: $('date-to').value
-    });
+    stats = await getStats({ path: state.path, isFile: state.isFile });
   } catch (e) { alert('Ошибка: ' + e.message); return; }
 
   renderCards(stats.byLevel);
@@ -118,8 +110,8 @@ function visibleCols() {
 async function openEntries(level) {
   modalState.level    = level;
   modalState.page     = 1;
-  modalState.dateFrom = $('date-from').value;
-  modalState.dateTo   = $('date-to').value;
+  modalState.dateFrom = '';
+  modalState.dateTo   = '';
   modalState.pageSize = Number($('modal-page-size').value) || 100;
 
   $('entries-modal-title').textContent = `${level}`;
