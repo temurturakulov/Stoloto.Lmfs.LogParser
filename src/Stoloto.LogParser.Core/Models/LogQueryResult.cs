@@ -1,0 +1,10 @@
+namespace Stoloto.LogParser.Core.Models;
+
+public class LogQueryResult
+{
+    public List<LogEntry> Items { get; set; } = new();
+    public int Total { get; set; }
+    public int Page { get; set; }
+    public int PageSize { get; set; }
+    public List<SkippedLine> SkippedLines { get; set; } = new();
+}

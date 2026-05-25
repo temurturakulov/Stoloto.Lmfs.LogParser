@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Stoloto.LogParser.Core.Tests")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b5f5354cacb0f8edd83528bde4e9fdb1323c8eff")]
 [assembly: System.Reflection.AssemblyProductAttribute("Stoloto.LogParser.Core.Tests")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Stoloto.LogParser.Core.Tests")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
