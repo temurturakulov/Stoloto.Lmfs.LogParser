@@ -324,6 +324,7 @@ __pycache__/
 
 # Claude Code
 .claude/
+.docs/
 
 # Documentation
 docs/
