@@ -42,6 +42,7 @@
       <label class="form-check-label" for="live-toggle">Live</label>
       <span id="live-dot" class="text-danger d-none">●</span>
     </div>
+    <a href="/dashboard.html" class="btn btn-sm btn-outline-secondary">📊</a>
     <a href="/settings.html" class="btn btn-sm btn-outline-secondary">⚙</a>
   </div>
 </nav>
@@ -89,17 +90,12 @@
       <input type="text" class="form-control form-control-sm" id="search-input" placeholder="текст в message/body...">
     </div>
     <div class="col-auto">
+      <button class="btn btn-sm btn-outline-secondary" id="sort-btn">↑ Время</button>
+    </div>
+    <div class="col-auto">
       <button class="btn btn-sm btn-primary" id="load-btn">Загрузить</button>
       <button class="btn btn-sm btn-outline-secondary" id="reset-btn">Сбросить</button>
     </div>
-  </div>
-  <!-- Active tags row -->
-  <div id="active-tags" class="mt-1 d-flex flex-wrap gap-1"></div>
-  <!-- Saved filters row -->
-  <div id="saved-filters-row" class="mt-1 d-flex flex-wrap gap-1 align-items-center">
-    <small class="text-muted">Фильтры:</small>
-    <div id="saved-filters-list" class="d-flex flex-wrap gap-1"></div>
-    <button class="btn btn-sm btn-outline-success" id="save-filter-btn">+ Сохранить</button>
   </div>
 </div>
 

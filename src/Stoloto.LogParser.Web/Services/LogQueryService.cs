@@ -17,7 +17,10 @@ public class LogQueryService(LocalLogSource source)
             if (skip != null) skipped.Add(skip);
         }
 
-        all.Sort((a, b) => b.Datetime.CompareTo(a.Datetime));
+        if (query.SortAsc)
+            all.Sort((a, b) => a.Datetime.CompareTo(b.Datetime));
+        else
+            all.Sort((a, b) => b.Datetime.CompareTo(a.Datetime));
 
         var total = all.Count;
         var items = all
@@ -35,11 +38,37 @@ public class LogQueryService(LocalLogSource source)
         };
     }
 
+    public async Task<LogStatsResult> StatsAsync(string path, bool isFile, DateTime? dateFrom, DateTime? dateTo, CancellationToken ct = default)
+    {
+        var byLevel = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        var byHour  = new Dictionary<int, Dictionary<string, int>>();
+
+        await foreach (var (entry, _) in source.ReadAsync(path, isFile, dateFrom, dateTo, ct))
+        {
+            if (entry == null) continue;
+            var level = entry.Level ?? "Unknown";
+            byLevel[level] = byLevel.GetValueOrDefault(level) + 1;
+            var h = entry.Datetime.Hour;
+            if (!byHour.ContainsKey(h)) byHour[h] = new();
+            byHour[h][level] = byHour[h].GetValueOrDefault(level) + 1;
+        }
+
+        var hours = Enumerable.Range(0, 24).Select(h =>
+        {
+            var row = new Dictionary<string, object> { ["hour"] = h };
+            if (byHour.TryGetValue(h, out var counts))
+                foreach (var kv in counts) row[kv.Key] = kv.Value;
+            return row;
+        }).ToList();
+
+        return new LogStatsResult { ByLevel = byLevel, ByHour = hours };
+    }
+
     public async Task<TraceResult> TraceAsync(string uid, string path, bool isFile, DateTime? date, CancellationToken ct = default)
     {
         var entries = new List<LogEntry>();
         var dateFrom = date?.Date;
-        var dateTo = date?.Date;
+        var dateTo   = date?.Date;
 
         await foreach (var (entry, _) in source.ReadAsync(path, isFile, dateFrom, dateTo, ct))
         {
@@ -77,6 +106,12 @@ public class LogQueryService(LocalLogSource source)
         }
         return true;
     }
+}
+
+public class LogStatsResult
+{
+    public Dictionary<string, int> ByLevel { get; set; } = new();
+    public List<Dictionary<string, object>> ByHour { get; set; } = new();
 }
 
 public class TraceResult

@@ -1,7 +1,7 @@
 import { getLogs, connectLive, getSettings, saveSettings, browse } from './api.js';
 
 let state = {
-  path: '', isFile: false, page: 1, pageSize: 100,
+  path: '', isFile: false, page: 1, pageSize: 100, sortAsc: true,
   skippedLines: [], settings: null,
   liveEs: null, livePaused: false, missedCount: 0
 };
@@ -12,7 +12,6 @@ const $ = id => document.getElementById(id);
 async function init() {
   state.settings = await getSettings();
   renderColumns();
-  renderSavedFilters();
   renderRecentPaths();
   if (state.settings.lastLogPath) {
     state.path   = state.settings.lastLogPath;
@@ -155,7 +154,8 @@ function buildQuery() {
     uid: $('uid-input').value,
     urlContains: $('url-input').value,
     search: $('search-input').value,
-    page: state.page, pageSize: Number($('page-size-select').value)
+    page: state.page, pageSize: Number($('page-size-select').value),
+    sortAsc: state.sortAsc
   };
 }
 
@@ -199,27 +199,6 @@ function updateMissed() {
   const b = $('missed-badge');
   if (state.missedCount > 0) { b.textContent = `Пропущено: ${state.missedCount}`; b.classList.remove('d-none'); }
   else b.classList.add('d-none');
-}
-
-// ── Saved filters ─────────────────────────────────────────────────────────────
-function renderSavedFilters() {
-  const list = $('saved-filters-list');
-  list.innerHTML = '';
-  (state.settings.savedFilters ?? []).forEach((f, i) => {
-    const btn = document.createElement('button');
-    btn.className = 'btn btn-sm btn-outline-info';
-    btn.textContent = f.name;
-    btn.addEventListener('click', () => applyFilter(f));
-    list.appendChild(btn);
-  });
-}
-
-function applyFilter(f) {
-  if (f.level) Array.from($('level-select').options).forEach(o => o.selected = o.value === f.level);
-  if (f.category) Array.from($('category-select').options).forEach(o => o.selected = o.value === f.category);
-  if (f.type) $('type-select').value = f.type;
-  if (f.search) $('search-input').value = f.search;
-  loadLogs();
 }
 
 // ── Recent paths ──────────────────────────────────────────────────────────────
@@ -275,6 +254,14 @@ function bindEvents() {
   });
   $('prev-btn').addEventListener('click', () => { state.page--; loadLogs(); });
   $('next-btn').addEventListener('click', () => { state.page++; loadLogs(); });
+  $('page-size-select').addEventListener('change', () => { state.page = 1; loadLogs(); });
+
+  $('sort-btn').addEventListener('click', () => {
+    state.sortAsc = !state.sortAsc;
+    $('sort-btn').textContent = state.sortAsc ? '↑ Время' : '↓ Время';
+    state.page = 1;
+    if (state.path) loadLogs();
+  });
 
   $('live-toggle').addEventListener('change', e => e.target.checked ? startLive() : stopLive());
   $('pause-btn').addEventListener('click', () => {
@@ -311,22 +298,6 @@ function bindEvents() {
   });
 
   $('skipped-btn').addEventListener('click', showSkipped);
-
-  $('save-filter-btn').addEventListener('click', async () => {
-    const name = prompt('Название фильтра:');
-    if (!name) return;
-    const levels     = Array.from($('level-select').selectedOptions).map(o => o.value);
-    const categories = Array.from($('category-select').selectedOptions).map(o => o.value);
-    state.settings.savedFilters.push({
-      name,
-      level:    levels[0] ?? null,
-      category: categories[0] ?? null,
-      type:     $('type-select').value || null,
-      search:   $('search-input').value || null
-    });
-    await saveSettings(state.settings);
-    renderSavedFilters();
-  });
 }
 
 init();

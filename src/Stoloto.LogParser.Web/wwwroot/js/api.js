@@ -12,6 +12,7 @@ export async function getLogs(params) {
   if (params.search)      q.set('search', params.search);
   q.set('page',     params.page     ?? 1);
   q.set('pageSize', params.pageSize ?? 100);
+  q.set('sortAsc',  params.sortAsc  ?? true);
 
   const res = await fetch(`/api/logs?${q}`);
   if (!res.ok) {
@@ -41,6 +42,20 @@ export function connectLive(params, onData, onError) {
   es.onmessage = e => { try { onData(JSON.parse(e.data)); } catch {} };
   es.onerror   = onError ?? (() => {});
   return es;
+}
+
+export async function getStats(params) {
+  const q = new URLSearchParams();
+  q.set('path', params.path);
+  if (params.isFile)   q.set('isFile', 'true');
+  if (params.dateFrom) q.set('dateFrom', params.dateFrom);
+  if (params.dateTo)   q.set('dateTo', params.dateTo);
+  const res = await fetch(`/api/logs/stats?${q}`);
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: res.statusText }));
+    throw new Error(err.error ?? res.statusText);
+  }
+  return res.json();
 }
 
 export async function browse(isFile = false) {

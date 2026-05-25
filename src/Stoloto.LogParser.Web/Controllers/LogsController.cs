@@ -28,6 +28,7 @@ public class LogsController(LogQueryService queryService, LiveLogService liveSer
         [FromQuery] string? search = null,
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 100,
+        [FromQuery] bool sortAsc = true,
         CancellationToken ct = default)
     {
         if (string.IsNullOrEmpty(path) ||
@@ -48,10 +49,30 @@ public class LogsController(LogQueryService queryService, LiveLogService liveSer
             UrlContains = urlContains,
             Search = search,
             Page = page,
-            PageSize = pageSize
+            PageSize = pageSize,
+            SortAsc = sortAsc
         };
 
         var result = await queryService.QueryAsync(query, ct);
+        return Ok(result);
+    }
+
+    [HttpGet("stats")]
+    public async Task<IActionResult> Stats(
+        [FromQuery] string path,
+        [FromQuery] bool isFile = false,
+        [FromQuery] string? dateFrom = null,
+        [FromQuery] string? dateTo = null,
+        CancellationToken ct = default)
+    {
+        if (string.IsNullOrEmpty(path) ||
+            (!isFile && !Directory.Exists(path)) ||
+            (isFile && !System.IO.File.Exists(path)))
+            return BadRequest(new { error = $"Путь не найден: {path}" });
+
+        DateTime? from = dateFrom != null ? DateTime.Parse(dateFrom) : null;
+        DateTime? to   = dateTo   != null ? DateTime.Parse(dateTo)   : null;
+        var result = await queryService.StatsAsync(path, isFile, from, to, ct);
         return Ok(result);
     }
 
