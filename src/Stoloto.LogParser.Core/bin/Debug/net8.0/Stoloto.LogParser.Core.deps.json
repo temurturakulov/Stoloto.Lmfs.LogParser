@@ -1,0 +1,23 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v8.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v8.0": {
+      "Stoloto.LogParser.Core/1.0.0": {
+        "runtime": {
+          "Stoloto.LogParser.Core.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "Stoloto.LogParser.Core/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}

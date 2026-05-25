@@ -1,0 +1,39 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v8.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v8.0": {
+      "Stoloto.LogParser.Web/1.0.0": {
+        "dependencies": {
+          "Stoloto.LogParser.Core": "1.0.0"
+        },
+        "runtime": {
+          "Stoloto.LogParser.Web.dll": {}
+        }
+      },
+      "Stoloto.LogParser.Core/1.0.0": {
+        "runtime": {
+          "Stoloto.LogParser.Core.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      }
+    }
+  },
+  "libraries": {
+    "Stoloto.LogParser.Web/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Stoloto.LogParser.Core/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}

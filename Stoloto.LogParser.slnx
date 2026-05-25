@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Stoloto.LogParser.Core/Stoloto.LogParser.Core.csproj" />
+    <Project Path="src/Stoloto.LogParser.Web/Stoloto.LogParser.Web.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Stoloto.LogParser.Core.Tests/Stoloto.LogParser.Core.Tests.csproj" />
+  </Folder>
+</Solution>

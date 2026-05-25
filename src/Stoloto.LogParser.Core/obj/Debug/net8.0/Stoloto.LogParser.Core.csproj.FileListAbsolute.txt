@@ -1,0 +1,11 @@
+C:\Frame\Stoloto.LogParser\src\Stoloto.LogParser.Core\bin\Debug\net8.0\Stoloto.LogParser.Core.deps.json
+C:\Frame\Stoloto.LogParser\src\Stoloto.LogParser.Core\bin\Debug\net8.0\Stoloto.LogParser.Core.dll
+C:\Frame\Stoloto.LogParser\src\Stoloto.LogParser.Core\bin\Debug\net8.0\Stoloto.LogParser.Core.pdb
+C:\Frame\Stoloto.LogParser\src\Stoloto.LogParser.Core\obj\Debug\net8.0\Stoloto.LogParser.Core.GeneratedMSBuildEditorConfig.editorconfig
+C:\Frame\Stoloto.LogParser\src\Stoloto.LogParser.Core\obj\Debug\net8.0\Stoloto.LogParser.Core.AssemblyInfoInputs.cache
+C:\Frame\Stoloto.LogParser\src\Stoloto.LogParser.Core\obj\Debug\net8.0\Stoloto.LogParser.Core.AssemblyInfo.cs
+C:\Frame\Stoloto.LogParser\src\Stoloto.LogParser.Core\obj\Debug\net8.0\Stoloto.LogParser.Core.csproj.CoreCompileInputs.cache
+C:\Frame\Stoloto.LogParser\src\Stoloto.LogParser.Core\obj\Debug\net8.0\Stoloto.LogParser.Core.dll
+C:\Frame\Stoloto.LogParser\src\Stoloto.LogParser.Core\obj\Debug\net8.0\refint\Stoloto.LogParser.Core.dll
+C:\Frame\Stoloto.LogParser\src\Stoloto.LogParser.Core\obj\Debug\net8.0\Stoloto.LogParser.Core.pdb
+C:\Frame\Stoloto.LogParser\src\Stoloto.LogParser.Core\obj\Debug\net8.0\ref\Stoloto.LogParser.Core.dll
