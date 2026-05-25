@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Trace — LMFS Log Parser</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <style>
+    .bar-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+    .bar-label { width: 90px; font-size: 0.75rem; text-align: right; flex-shrink: 0; }
+    .bar-track { flex: 1; height: 24px; background: #e9ecef; border-radius: 4px; position: relative; cursor: pointer; }
+    .bar-fill { height: 100%; border-radius: 4px; position: absolute; }
+    .bar-dur { font-size: 0.7rem; color: #6c757d; width: 60px; flex-shrink: 0; }
+    .cat-api      { background: #0d6efd; }
+    .cat-kkt      { background: #fd7e14; }
+    .cat-db       { background: #6c757d; }
+    .cat-auth     { background: #198754; }
+    .cat-pos      { background: #6f42c1; }
+    .cat-queue    { background: #0dcaf0; }
+    .cat-schedule { background: #d63384; }
+    .cat-file     { background: #795548; }
+    .detail-card  { background: #f8f9fa; border-left: 4px solid #0d6efd; padding: 0.75rem; font-size: 0.8rem; }
+  </style>
+</head>
+<body class="p-3">
+  <div class="d-flex align-items-center gap-2 mb-3">
+    <a href="/" class="btn btn-sm btn-outline-secondary">← Назад</a>
+    <h6 class="mb-0" id="trace-title">Trace</h6>
+  </div>
+  <div id="summary" class="mb-3 text-muted small"></div>
+  <div id="timeline"></div>
+  <div id="detail" class="mt-3"></div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script type="module" src="/js/trace.js"></script>
+</body>
+</html>
