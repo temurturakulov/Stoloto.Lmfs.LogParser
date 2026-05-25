@@ -74,15 +74,21 @@
       <div class="modal-body p-0">
         <table class="table table-sm table-hover table-bordered mb-0">
           <thead class="table-light sticky-top">
-            <tr>
-              <th>datetime</th><th>level</th><th>category</th><th>url</th><th>message</th>
-            </tr>
+            <tr id="entries-thead-row"></tr>
           </thead>
           <tbody id="entries-tbody"></tbody>
         </table>
       </div>
-      <div class="modal-footer">
+      <div class="modal-footer gap-2 flex-wrap">
         <small class="text-muted me-auto" id="entries-count"></small>
+        <button class="btn btn-sm btn-outline-secondary" id="modal-prev-btn">←</button>
+        <span class="small" id="modal-page-label">Стр. 1</span>
+        <button class="btn btn-sm btn-outline-secondary" id="modal-next-btn">→</button>
+        <select class="form-select form-select-sm" id="modal-page-size" style="width:80px">
+          <option value="50">50</option>
+          <option value="100" selected>100</option>
+          <option value="200">200</option>
+        </select>
         <button class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Закрыть</button>
       </div>
     </div>

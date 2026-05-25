@@ -9,7 +9,13 @@ const LEVEL_COLORS = {
 
 const $ = id => document.getElementById(id);
 let chartInstance = null;
+let appSettings   = null;
 let state = { path: '', isFile: false };
+
+let modalState = {
+  level: '', page: 1, pageSize: 100,
+  total: 0, dateFrom: '', dateTo: ''
+};
 
 function esc(s) {
   return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
@@ -20,10 +26,10 @@ async function init() {
   $('date-from').value = today;
   $('date-to').value   = today;
 
-  const settings = await getSettings();
-  if (settings.lastLogPath) {
-    state.path   = settings.lastLogPath;
-    state.isFile = settings.lastPathIsFile;
+  appSettings = await getSettings();
+  if (appSettings.lastLogPath) {
+    state.path   = appSettings.lastLogPath;
+    state.isFile = appSettings.lastPathIsFile;
     $('path-label').textContent = state.path;
     load();
   } else {
@@ -31,7 +37,12 @@ async function init() {
   }
 
   $('load-btn').addEventListener('click', load);
+  $('modal-prev-btn').addEventListener('click', () => { modalState.page--; loadModalPage(); });
+  $('modal-next-btn').addEventListener('click', () => { modalState.page++; loadModalPage(); });
+  $('modal-page-size').addEventListener('change', () => { modalState.page = 1; loadModalPage(); });
 }
+
+// ── Stats ────────────────────────────────────────────────────────────────────
 
 async function load() {
   if (!state.path) { $('no-path').style.display = ''; return; }
@@ -43,10 +54,7 @@ async function load() {
       path: state.path, isFile: state.isFile,
       dateFrom: $('date-from').value, dateTo: $('date-to').value
     });
-  } catch (e) {
-    alert('Ошибка: ' + e.message);
-    return;
-  }
+  } catch (e) { alert('Ошибка: ' + e.message); return; }
 
   renderCards(stats.byLevel);
   renderChart(stats.byHour, stats.byLevel);
@@ -55,43 +63,29 @@ async function load() {
 function renderCards(byLevel) {
   const container = $('level-cards');
   container.innerHTML = '';
-  const levels = ['Error', 'Warn', 'Info', 'Debug'];
+  const priority = ['Error', 'Warn', 'Info', 'Debug'];
+  const all = [...priority, ...Object.keys(byLevel).filter(l => !priority.includes(l))];
 
-  levels.forEach(level => {
+  all.forEach(level => {
     const count = byLevel[level] ?? 0;
+    const color = LEVEL_COLORS[level] ?? '#adb5bd';
     const col = document.createElement('div');
     col.className = 'col-6 col-md-3';
     col.innerHTML = `
-      <div class="card level-card level-${level} p-3" data-level="${level}" role="button">
-        <div class="text-muted small">${level}</div>
-        <div class="count-num" style="color:${LEVEL_COLORS[level] ?? '#333'}">${count.toLocaleString('ru')}</div>
-        <div class="text-muted small mt-1">записей</div>
-      </div>`;
-    col.querySelector('.card').addEventListener('click', () => openEntries(level, count));
-    container.appendChild(col);
-  });
-
-  // extra levels not in the standard list
-  Object.entries(byLevel).forEach(([level, count]) => {
-    if (levels.includes(level)) return;
-    const col = document.createElement('div');
-    col.className = 'col-6 col-md-3';
-    col.innerHTML = `
-      <div class="card level-card p-3" style="border-color:#adb5bd" data-level="${level}" role="button">
+      <div class="card level-card level-${level} p-3" role="button">
         <div class="text-muted small">${esc(level)}</div>
-        <div class="count-num" style="color:#adb5bd">${count.toLocaleString('ru')}</div>
+        <div class="count-num" style="color:${color}">${count.toLocaleString('ru')}</div>
         <div class="text-muted small mt-1">записей</div>
       </div>`;
-    col.querySelector('.card').addEventListener('click', () => openEntries(level, count));
+    col.querySelector('.card').addEventListener('click', () => openEntries(level));
     container.appendChild(col);
   });
 }
 
 function renderChart(byHour, byLevel) {
   $('chart-card').style.display = '';
-  const levels = Object.keys(byLevel).filter(l => byLevel[l] > 0);
-  const labels = byHour.map(h => `${String(h.hour).padStart(2,'0')}:00`);
-
+  const levels   = Object.keys(byLevel).filter(l => byLevel[l] > 0);
+  const labels   = byHour.map(h => `${String(h.hour).padStart(2,'0')}:00`);
   const datasets = levels.map(level => ({
     label: level,
     data: byHour.map(h => h[level] ?? 0),
@@ -111,64 +105,113 @@ function renderChart(byHour, byLevel) {
   });
 }
 
-async function openEntries(level, total) {
-  $('entries-modal-title').textContent = `${level} — записей: ${total.toLocaleString('ru')}`;
-  $('entries-count').textContent = 'Загрузка...';
-  $('entries-tbody').innerHTML = '<tr><td colspan="5" class="text-center text-muted">Загрузка...</td></tr>';
+// ── Entries modal ─────────────────────────────────────────────────────────────
 
-  const modal = new bootstrap.Modal($('entries-modal'));
-  modal.show();
+function visibleCols() {
+  if (!appSettings?.columns) return ['datetime','level','category','url','message'];
+  return appSettings.columns
+    .filter(c => c.visible)
+    .sort((a, b) => a.order - b.order)
+    .map(c => c.name);
+}
+
+async function openEntries(level) {
+  modalState.level    = level;
+  modalState.page     = 1;
+  modalState.dateFrom = $('date-from').value;
+  modalState.dateTo   = $('date-to').value;
+  modalState.pageSize = Number($('modal-page-size').value) || 100;
+
+  $('entries-modal-title').textContent = `${level}`;
+  new bootstrap.Modal($('entries-modal')).show();
+  await loadModalPage();
+}
+
+async function loadModalPage() {
+  modalState.pageSize = Number($('modal-page-size').value) || 100;
+  $('entries-tbody').innerHTML = '<tr><td colspan="99" class="text-center text-muted p-3">Загрузка...</td></tr>';
 
   try {
     const result = await getLogs({
       path: state.path, isFile: state.isFile,
-      dateFrom: $('date-from').value, dateTo: $('date-to').value,
-      levels: [level],
-      page: 1, pageSize: 200, sortAsc: false
+      dateFrom: modalState.dateFrom, dateTo: modalState.dateTo,
+      levels: [modalState.level],
+      page: modalState.page, pageSize: modalState.pageSize,
+      sortAsc: false
     });
 
-    $('entries-count').textContent = `Показано ${result.items.length} из ${result.total}`;
+    modalState.total = result.total;
+    const cols = visibleCols();
+
+    // update header
+    $('entries-thead-row').innerHTML = cols.map(c => `<th class="text-nowrap">${esc(c)}</th>`).join('');
+
+    // update pagination info
+    const from = (modalState.page - 1) * modalState.pageSize + 1;
+    const to   = Math.min(modalState.page * modalState.pageSize, result.total);
+    $('entries-count').textContent  = `Показано ${from}–${to} из ${result.total.toLocaleString('ru')}`;
+    $('modal-prev-btn').disabled    = modalState.page <= 1;
+    $('modal-next-btn').disabled    = to >= result.total;
+    $('modal-page-label').textContent = `Стр. ${modalState.page}`;
+
     const tbody = $('entries-tbody');
     tbody.innerHTML = '';
-
     result.items.forEach(entry => {
       const tr = document.createElement('tr');
       tr.className = 'log-row';
-      tr.innerHTML = `
-        <td class="text-nowrap small">${entry.datetime ? new Date(entry.datetime).toLocaleString('ru') : ''}</td>
-        <td class="small" style="color:${LEVEL_COLORS[entry.level] ?? ''}">${esc(entry.level)}</td>
-        <td class="small">${esc(entry.category)}</td>
-        <td class="small text-truncate" style="max-width:200px" title="${esc(entry.url)}">${esc(entry.url)}</td>
-        <td class="small text-truncate" style="max-width:300px" title="${esc(entry.message)}">${esc(entry.message)}</td>`;
-      tr.addEventListener('click', () => toggleDetail(tr, entry, tbody));
+      tr.innerHTML = cols.map(c => {
+        const val = cellValue(entry, c);
+        let cls = '';
+        if (c === 'level') cls = `style="color:${LEVEL_COLORS[entry.level] ?? ''}"`;
+        return `<td ${cls} class="text-nowrap" style="max-width:280px;overflow:hidden;text-overflow:ellipsis" title="${esc(val)}">${esc(val)}</td>`;
+      }).join('');
+      tr.addEventListener('click', () => toggleDetail(tr, entry));
       tbody.appendChild(tr);
     });
   } catch (e) {
-    $('entries-tbody').innerHTML = `<tr><td colspan="5" class="text-danger">${esc(e.message)}</td></tr>`;
+    $('entries-tbody').innerHTML = `<tr><td colspan="99" class="text-danger p-3">${esc(e.message)}</td></tr>`;
   }
 }
 
-function toggleDetail(tr, entry, tbody) {
+function cellValue(entry, col) {
+  if (col === 'datetime') return entry.datetime ? new Date(entry.datetime).toLocaleString('ru') : '';
+  return entry[col] ?? entry.extra?.[col] ?? '';
+}
+
+function toggleDetail(tr, entry) {
   const next = tr.nextElementSibling;
   if (next?.classList.contains('detail-row')) { next.remove(); return; }
 
   const fields = [
-    ['datetime', entry.datetime ? new Date(entry.datetime).toLocaleString('ru') : ''],
-    ['level', entry.level], ['category', entry.category], ['type', entry.type],
-    ['url', entry.url], ['uid', entry.uid], ['message', entry.message],
-    ['body', entry.body],
+    ['datetime',     entry.datetime ? new Date(entry.datetime).toLocaleString('ru') : ''],
+    ['level',        entry.level],
+    ['category',     entry.category],
+    ['type',         entry.type],
+    ['url',          entry.url],
+    ['uid',          entry.uid],
+    ['message',      entry.message],
+    ['body',         entry.body],
     ['responseTime', entry.responseTime != null ? entry.responseTime + 's' : null],
-    ['httpCode', entry.httpCode], ['logger', entry.logger],
+    ['httpCode',     entry.httpCode],
+    ['logger',       entry.logger],
+    ['sourceFile',   entry.sourceFile],
     ...Object.entries(entry.extra ?? {})
   ].filter(([, v]) => v != null && v !== '');
 
-  const rows = fields.map(([k, v]) =>
-    `<tr><td class="text-muted" style="width:130px">${esc(k)}</td><td style="word-break:break-all">${esc(String(v))}</td></tr>`
-  ).join('');
+  const rows = fields.map(([k, v]) => {
+    const traceLink = k === 'uid' && v
+      ? ` <a href="/trace.html?uid=${encodeURIComponent(v)}&path=${encodeURIComponent(state.path)}&isFile=${state.isFile}&date=${entry.datetime?.slice(0,10) ?? ''}" target="_blank">[→ trace]</a>`
+      : '';
+    return `<tr>
+      <td class="text-muted" style="width:130px">${esc(k)}</td>
+      <td style="word-break:break-all">${esc(String(v))}${traceLink}</td>
+    </tr>`;
+  }).join('');
 
+  const cols = visibleCols().length || 5;
   const detail = document.createElement('tr');
   detail.className = 'detail-row';
-  detail.innerHTML = `<td colspan="5"><div class="detail-card"><table class="table table-sm mb-0">${rows}</table></div></td>`;
+  detail.innerHTML = `<td colspan="${cols}"><div class="detail-card"><table class="table table-sm mb-0">${rows}</table></div></td>`;
   tr.after(detail);
 }
 
