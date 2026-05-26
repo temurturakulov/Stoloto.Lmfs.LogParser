@@ -59,6 +59,10 @@
       <input type="date" class="form-control form-control-sm" id="date-to">
     </div>
     <div class="col-auto">
+      <label class="form-label mb-0 small d-block">&nbsp;</label>
+      <button class="btn btn-sm btn-outline-secondary" id="sort-btn">↑ Время</button>
+    </div>
+    <div class="col-auto">
       <label class="form-label mb-0 small">Уровень</label>
       <select class="form-select form-select-sm" id="level-select" multiple style="height:60px">
         <option>Info</option><option>Warn</option><option>Error</option><option>Debug</option>
@@ -88,9 +92,6 @@
     <div class="col">
       <label class="form-label mb-0 small">Поиск</label>
       <input type="text" class="form-control form-control-sm" id="search-input" placeholder="текст в message/body...">
-    </div>
-    <div class="col-auto">
-      <button class="btn btn-sm btn-outline-secondary" id="sort-btn">↑ Время</button>
     </div>
     <div class="col-auto">
       <button class="btn btn-sm btn-primary" id="load-btn">Загрузить</button>

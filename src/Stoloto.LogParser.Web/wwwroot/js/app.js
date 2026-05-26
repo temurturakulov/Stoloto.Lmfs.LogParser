@@ -171,7 +171,7 @@ function startLive() {
   const params = buildQuery();
   state.liveEs = connectLive(params, data => {
     if (state.livePaused) { state.missedCount += data.entries?.length ?? 0; updateMissed(); return; }
-    prependRows(data.entries ?? []);
+    addLiveRows(data.entries ?? []);
   }, () => setTimeout(startLive, 3000));
 }
 
@@ -183,7 +183,7 @@ function stopLive() {
   $('missed-badge').classList.add('d-none');
 }
 
-function prependRows(entries) {
+function addLiveRows(entries) {
   const cols = visibleCols();
   const tbody = $('tbody');
   entries.forEach(entry => {
@@ -191,7 +191,8 @@ function prependRows(entries) {
     tr.className = 'log-row table-warning';
     tr.innerHTML = cols.map(c => `<td class="text-nowrap">${esc(cellValue(entry, c))}</td>`).join('');
     tr.addEventListener('click', () => toggleDetail(tr, entry, entries));
-    tbody.prepend(tr);
+    if (state.sortAsc) tbody.appendChild(tr);
+    else tbody.prepend(tr);
   });
 }
 
@@ -290,7 +291,7 @@ function bindEvents() {
     state.isFile = document.querySelector('input[name="path-mode"]:checked').value === 'file';
     $('path-label').textContent = shortPath(p);
     bootstrap.Modal.getInstance($('source-modal')).hide();
-    state.settings.recentPaths = [p, ...(state.settings.recentPaths ?? []).filter(x => x !== p)].slice(0, 10);
+    state.settings.recentPaths = [p, ...(state.settings.recentPaths ?? []).filter(x => x !== p)].slice(0, 2);
     state.settings.lastLogPath   = p;
     state.settings.lastPathIsFile = state.isFile;
     await saveSettings(state.settings);
