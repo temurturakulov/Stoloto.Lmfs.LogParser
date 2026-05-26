@@ -77,7 +77,7 @@ function renderCards(byLevel) {
 function renderChart(byHour, byLevel) {
   $('chart-card').style.display = '';
   const levels   = Object.keys(byLevel).filter(l => byLevel[l] > 0);
-  const labels   = byHour.map(h => `${String(h.hour).padStart(2,'0')}:00`);
+  const labels   = byHour.map(h => h.label ?? `${String(h.hour).padStart(2,'0')}:00`);
   const datasets = levels.map(level => ({
     label: level,
     data: byHour.map(h => h[level] ?? 0),
@@ -92,7 +92,23 @@ function renderChart(byHour, byLevel) {
       responsive: true,
       maintainAspectRatio: false,
       plugins: { legend: { position: 'top' } },
-      scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true } }
+      scales: {
+        x: {
+          stacked: true,
+          ticks: {
+            maxRotation: 45,
+            callback: function(value, index) {
+              const item = byHour[index];
+              if (!item) return '';
+              // At midnight show the date (dd.MM), otherwise show time (HH:00)
+              return item.hour === 0
+                ? String(item.label ?? '').slice(0, 5)
+                : String(item.label ?? '').slice(6);
+            }
+          }
+        },
+        y: { stacked: true, beginAtZero: true }
+      }
     }
   });
 }

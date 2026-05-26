@@ -40,26 +40,47 @@ public class LogQueryService(LocalLogSource source)
 
     public async Task<LogStatsResult> StatsAsync(string path, bool isFile, DateTime? dateFrom, DateTime? dateTo, CancellationToken ct = default)
     {
-        var byLevel = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-        var byHour  = new Dictionary<int, Dictionary<string, int>>();
+        var byLevel    = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        var byDateHour = new Dictionary<DateTime, Dictionary<string, int>>();
 
         await foreach (var (entry, _) in source.ReadAsync(path, isFile, dateFrom, dateTo, ct))
         {
             if (entry == null) continue;
             var level = entry.Level ?? "Unknown";
             byLevel[level] = byLevel.GetValueOrDefault(level) + 1;
-            var h = entry.Datetime.Hour;
-            if (!byHour.ContainsKey(h)) byHour[h] = new();
-            byHour[h][level] = byHour[h].GetValueOrDefault(level) + 1;
+            var slot = entry.Datetime.Date.AddHours(entry.Datetime.Hour);
+            if (!byDateHour.ContainsKey(slot)) byDateHour[slot] = new();
+            byDateHour[slot][level] = byDateHour[slot].GetValueOrDefault(level) + 1;
         }
 
-        var hours = Enumerable.Range(0, 24).Select(h =>
+        List<Dictionary<string, object>> hours;
+        if (byDateHour.Count == 0)
         {
-            var row = new Dictionary<string, object> { ["hour"] = h };
-            if (byHour.TryGetValue(h, out var counts))
-                foreach (var kv in counts) row[kv.Key] = kv.Value;
-            return row;
-        }).ToList();
+            hours = Enumerable.Range(0, 24).Select(h =>
+                new Dictionary<string, object> { ["hour"] = h, ["label"] = $"{h:D2}:00" }
+            ).ToList();
+        }
+        else
+        {
+            var minDate = byDateHour.Keys.Min().Date;
+            var maxDate = byDateHour.Keys.Max().Date;
+            hours = new List<Dictionary<string, object>>();
+            for (var date = minDate; date <= maxDate; date = date.AddDays(1))
+            {
+                for (var h = 0; h < 24; h++)
+                {
+                    var slot = date.AddHours(h);
+                    var row = new Dictionary<string, object>
+                    {
+                        ["hour"]  = h,
+                        ["label"] = $"{slot:dd.MM HH:00}"
+                    };
+                    if (byDateHour.TryGetValue(slot, out var counts))
+                        foreach (var kv in counts) row[kv.Key] = kv.Value;
+                    hours.Add(row);
+                }
+            }
+        }
 
         return new LogStatsResult { ByLevel = byLevel, ByHour = hours };
     }
