@@ -23,6 +23,11 @@ function esc(s) {
 
 async function init() {
   appSettings = await getSettings();
+
+  const today = new Date().toISOString().slice(0, 10);
+  $('date-from').value = today;
+  $('date-to').value   = today;
+
   if (appSettings.lastLogPath) {
     state.path   = appSettings.lastLogPath;
     state.isFile = appSettings.lastPathIsFile;
@@ -32,6 +37,7 @@ async function init() {
     $('no-path').style.display = '';
   }
 
+  $('load-btn').addEventListener('click', load);
   $('modal-prev-btn').addEventListener('click', () => { modalState.page--; loadModalPage(); });
   $('modal-next-btn').addEventListener('click', () => { modalState.page++; loadModalPage(); });
   $('modal-page-size').addEventListener('change', () => { modalState.page = 1; loadModalPage(); });
@@ -45,7 +51,11 @@ async function load() {
 
   let stats;
   try {
-    stats = await getStats({ path: state.path, isFile: state.isFile });
+    stats = await getStats({
+      path: state.path, isFile: state.isFile,
+      dateFrom: $('date-from').value,
+      dateTo:   $('date-to').value,
+    });
   } catch (e) { alert('Ошибка: ' + e.message); return; }
 
   renderCards(stats.byLevel);

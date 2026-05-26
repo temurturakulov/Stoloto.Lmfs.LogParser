@@ -28,7 +28,16 @@
 </nav>
 
 <div class="bg-light border-bottom px-3 py-2 flex-shrink-0">
-  <span class="text-muted small" id="path-label"></span>
+  <div class="d-flex align-items-center gap-3 flex-wrap">
+    <span class="text-muted small" id="path-label"></span>
+    <div class="d-flex align-items-center gap-2 ms-auto">
+      <label class="form-label mb-0 small">Дата от</label>
+      <input type="date" class="form-control form-control-sm" id="date-from" style="width:145px">
+      <label class="form-label mb-0 small">до</label>
+      <input type="date" class="form-control form-control-sm" id="date-to" style="width:145px">
+      <button class="btn btn-sm btn-primary" id="load-btn">Загрузить</button>
+    </div>
+  </div>
 </div>
 
 <div class="flex-grow-1 overflow-auto p-3">
