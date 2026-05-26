@@ -18,17 +18,13 @@ jobs:
           dotnet-version: '8.0.x'
 
       - name: Publish
-        run: |
-          dotnet publish src/Stoloto.LogParser.Web/Stoloto.LogParser.Web.csproj `
-            -c Release `
-            -r win-x64 `
-            --self-contained true `
-            -p:PublishSingleFile=true `
-            -p:IncludeNativeLibrariesForSelfExtract=true `
-            -o publish
+        run: dotnet publish src/Stoloto.LogParser.Web/Stoloto.LogParser.Web.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o publish
+
+      - name: Show publish contents
+        run: Get-ChildItem publish -Recurse | Select-Object FullName
 
       - name: Zip artifact
-        run: Compress-Archive -Path publish\* -DestinationPath LogParser-${{ github.ref_name }}.zip
+        run: Compress-Archive -Path publish/* -DestinationPath LogParser-${{ github.ref_name }}.zip
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
